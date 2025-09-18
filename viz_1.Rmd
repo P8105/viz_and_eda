@@ -1,0 +1,11 @@
+---
+title: "Viz I"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(ggridges)
+```
+
+
