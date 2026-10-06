@@ -170,6 +170,85 @@ ggp_seasonal =
 ```
 
 
+## Data manipulation
+
+Start with factors.
+
+boxplots!
+
+```{r}
+weather_df |> 
+  mutate(name = fct_relevel(name, c("Molokai_HI", "CentralPark_NY", "Waterhole_WA"))) |> 
+  ggplot(aes(x = name, y = tmax)) + 
+  geom_boxplot()
+```
+
+```{r}
+weather_df |> 
+  mutate(name = fct_reorder(name, tmax)) |> 
+  ggplot(aes(x = name, y = tmax)) + 
+  geom_boxplot()
+```
+
+
+Make that distribution plot
+
+```{r}
+weather_df |> 
+  select(name, tmax, tmin) |> 
+  pivot_longer(
+    tmax:tmin,
+    names_to = "observation", 
+    values_to = "temp"
+  ) |> 
+  ggplot(aes(x = temp, fill = observation)) + 
+  geom_density(alpha = .5) +
+  facet_grid(. ~ name)
+```
+
+
+Make an FAS plot.
+
+```{r}
+pups_df =
+  read_csv(
+    "data/FAS_pups.csv", skip = 3, na = c("", ".", "NA")) |> 
+  janitor::clean_names()
+
+litters_df = 
+  read_csv(
+    "data/FAS_litters.csv", na = c("", ".", "NA")) |> 
+  janitor::clean_names() |> 
+  separate(group, into = c("dose", "day_of_tx"), 3)
+
+fas_df = 
+  left_join(pups_df, litters_df, by = "litter_number")
+
+fas_df |> 
+  select(dose, day_of_tx, starts_with("pd")) |> 
+  pivot_longer(
+    starts_with("pd"),
+    names_to = "outcome",
+    values_to = "pn_day"
+  ) |> 
+  drop_na() |> 
+  mutate(
+    outcome = fct_reorder(outcome, pn_day)
+  ) |> 
+  ggplot(aes(x = dose, y = pn_day)) +
+  geom_boxplot() + 
+  facet_grid(day_of_tx ~ outcome)
+
+```
+
+
+
+
+
+
+
+
+
 
 
 
