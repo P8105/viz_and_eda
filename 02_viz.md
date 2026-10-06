@@ -17,6 +17,7 @@ library(tidyverse)
     ## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 
 ``` r
+library(patchwork)
 library(p8105.datasets)
 
 data("weather_df")
@@ -105,3 +106,122 @@ weather_df |>
     ## (`geom_point()`).
 
 ![](02_viz_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+
+## Themes
+
+``` r
+weather_df |> 
+  ggplot(aes(x = tmin, y = tmax, color = name)) + 
+  geom_point() +
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE
+  ) + 
+  theme(legend.position = "bottom")
+```
+
+    ## Warning: Removed 17 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](02_viz_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
+``` r
+weather_df |> 
+  ggplot(aes(x = tmin, y = tmax, color = name)) + 
+  geom_point() +
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE
+  ) + 
+  theme_classic() + 
+  theme(legend.position = "bottom")
+```
+
+    ## Warning: Removed 17 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](02_viz_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+Update the tmax vs date plot.
+
+``` r
+weather_df |> 
+  ggplot(aes(x = date, y = tmax, color = name)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE) + 
+  labs(
+    title = "Seasonal trends in Max Temp", 
+    x = "Date", 
+    y = "Max Temp",
+    caption = "Max daily temp in three weather stations in 2021 and 2020",
+    color = "Location"
+  ) +
+  viridis::scale_color_viridis(
+    discrete = TRUE
+  ) + 
+  theme_minimal() +
+  theme(legend.position = "bottom") 
+```
+
+    ## `geom_smooth()` using method = 'loess' and formula = 'y ~ x'
+
+    ## Warning: Removed 17 rows containing non-finite outside the scale range
+    ## (`stat_smooth()`).
+
+    ## Warning: Removed 17 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](02_viz_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+## Two more weird but useful plot things
+
+``` r
+central_park_df = 
+  weather_df |> 
+  filter(name == "CentralPark_NY")
+
+molokai_df = 
+  weather_df |> 
+  filter(name == "Molokai_HI")
+
+ggplot(molokai_df, aes(x = date, y = tmax, color = name)) + 
+  geom_point() + 
+  geom_line(data = central_park_df)
+```
+
+    ## Warning: Removed 1 row containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](02_viz_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+multiple panels with different plot types.
+
+``` r
+ggp_tmax_tmin = 
+  weather_df |> 
+  ggplot(aes(x = tmin, y = tmax, color = name)) + 
+  geom_point() + 
+  theme(legend.position = "none")
+
+ggp_prcp_density = 
+  weather_df |> 
+  filter(prcp > 0) |> 
+  ggplot(aes(x = prcp, fill = name)) + 
+  geom_density(alpha = .5) + 
+  theme(legend.position = "none")
+
+ggp_seasonal =
+  weather_df |> 
+  ggplot(aes(x = date, y = tmax, color = name)) + 
+  geom_point() + 
+  theme(legend.position = "bottom")
+
+(ggp_tmax_tmin + ggp_prcp_density) / ggp_seasonal
+```
+
+    ## Warning: Removed 17 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+    ## Removed 17 rows containing missing values or values outside the scale range
+    ## (`geom_point()`).
+
+![](02_viz_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
