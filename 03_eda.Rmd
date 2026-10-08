@@ -28,6 +28,125 @@ Load the weather data as well.
 
 ```{r}
 data("weather_df")
+
+weather_df = 
+  weather_df |> 
+  mutate(
+    month = lubridate::floor_date(date, unit = "month")
+  )
 ```
 
 Now we have everything we need!
+
+```{r}
+weather_df |> 
+  filter(prcp > 0) |> 
+  ggplot(aes(x = prcp)) + 
+  geom_histogram()
+```
+
+wait, what?
+
+```{r}
+weather_df |> 
+  filter(prcp > 1000)
+```
+
+
+```{r}
+weather_df |> 
+  filter(tmax >= 20, tmax <= 30) |> 
+  ggplot(aes(x = tmax, y = tmin, color = name, shape = name)) + 
+  geom_point()
+```
+
+## `group_by()`
+
+add some groups!
+
+```{r}
+weather_df |> 
+  group_by(name, month)
+```
+
+
+## `summarize()`
+
+```{r}
+weather_df |> 
+  group_by(name) |> 
+  summarize(count = n())
+```
+
+```{r}
+weather_df |> 
+  group_by(name, month) |> 
+  summarize(count = n())
+```
+
+
+```{r}
+weather_df |> 
+  count(name, month)
+```
+
+
+```{r}
+weather_df |> 
+  group_by(month) |> 
+  summarize(
+    count = n(),
+    n_days = n_distinct(date))
+```
+
+
+DON'T DO THIS
+
+```{r, eval = FALSE}
+weather_df |> 
+  pull(tmax) |> 
+  summary()
+```
+
+do this instead
+
+```{r}
+weather_df |> 
+  group_by(name) |> 
+  summarize(
+    n = n(),
+    mean_tmax = mean(tmax, na.rm = TRUE),
+    median_tmax = median(tmax, na.rm = TRUE),
+    q95_prcp = quantile(prcp, 0.95, na.rm = TRUE)
+  ) |> 
+  knitr::kable(digits = 2)
+```
+
+```{r}
+weather_df |> 
+  group_by(name, month) |> 
+  summarise(
+    mean_tmax = mean(tmax, na.rm = TRUE)
+  ) |> 
+  pivot_wider(
+    names_from = name, 
+    values_from = mean_tmax
+  ) |> 
+  knitr::kable(digits = 2)
+```
+
+what about looking at this
+
+```{r}
+weather_df |> 
+  group_by(name, month) |> 
+  summarise(
+    mean_tmax = mean(tmax, na.rm = TRUE)
+  ) |> 
+  ggplot(aes(x = month, y = mean_tmax, color = name)) + 
+  geom_point() + 
+  geom_line()
+```
+
+
+
